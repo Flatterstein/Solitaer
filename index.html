@@ -63,7 +63,7 @@
 <body>
 
     <h1>Solitaire - Kreuzfeld</h1>
-    <p>Klicke auf eine Nadel und dann auf das Zielfeld, um zu springen.</p>
+    <p>Klicke auf eine Nadel, um sie zu entfernen. Nur einmal am Anfang ist dies möglich.</p>
     
     <div class="board-container">
         <div id="board" class="board"></div>
@@ -81,8 +81,12 @@
             [null, null,  1,  1,  1, null, null]
         ];
 
+        // Setze den blauen Punkt in der Mitte zu Beginn
+        boardLayout[3][3] = 1;
+
         const board = document.getElementById('board');
         let selectedCell = null;
+        let hasRemovedPeg = false; // Verhindert, dass mehr als ein Stein entfernt wird
 
         function createBoard() {
             board.innerHTML = '';
@@ -90,14 +94,12 @@
                 row.forEach((cell, c) => {
                     const cellElement = document.createElement('div');
                     cellElement.classList.add('cell');
+                    
                     if (cell === null) {
                         cellElement.classList.add('hidden');
                     } else if (cell === 1) {
                         const peg = document.createElement('div');
                         peg.classList.add('peg');
-                        if (selectedCell && selectedCell.row === r && selectedCell.col === c) {
-                            peg.classList.add('selected');
-                        }
                         cellElement.appendChild(peg);
                     } else {
                         cellElement.classList.add('empty');
@@ -116,18 +118,35 @@
             const row = parseInt(cellElement.dataset.row);
             const col = parseInt(cellElement.dataset.col);
 
-            if (selectedCell) {
-                if (isValidMove(selectedCell, { row, col })) {
-                    makeMove(selectedCell, { row, col });
-                    selectedCell = null;
+            // Wenn der Spieler auf einen blauen Punkt klickt und noch nicht entfernt wurde, entferne den Punkt
+            if (!hasRemovedPeg && boardLayout[row][col] === 1) {
+                boardLayout[row][col] = 0;  // Punkt entfernen
+                hasRemovedPeg = true;  // Setze, dass ein Punkt entfernt wurde
+                createBoard();  // Board neu zeichnen
+            } 
+            // Erlaubt das Auswählen eines Steins, um zu spielen, wenn es keinen "ausgewählten" Stein gibt
+            else if (boardLayout[row][col] === 1 && !selectedCell && hasRemovedPeg) {
+                selectedCell = { row, col };
+                cellElement.classList.add('selected');
+            } 
+            // Wenn ein Stein ausgewählt wurde und der Spieler auf das Zielfeld klickt
+            else if (selectedCell) {
+                const targetRow = row;
+                const targetCol = col;
+
+                if (isValidMove(selectedCell, { row: targetRow, col: targetCol })) {
+                    makeMove(selectedCell, { row: targetRow, col: targetCol });
+                    selectedCell = null;  // Setze das ausgewählte Feld zurück
                     createBoard();
                 } else {
-                    selectedCell = null;
-                    createBoard();
+                    // Setze das ausgewählte Feld zurück, wenn der Zug ungültig ist
+                    const prevSelected = document.querySelector('.selected');
+                    if (prevSelected) {
+                        prevSelected.classList.remove('selected');
+                    }
+                    selectedCell = null;  // Setze die Auswahl zurück
+                    createBoard();  // Board neu zeichnen
                 }
-            } else if (boardLayout[row][col] === 1) {
-                selectedCell = { row, col };
-                createBoard();
             }
         }
 
@@ -164,7 +183,12 @@
                 [null, null,  1,  1,  1, null, null],
                 [null, null,  1,  1,  1, null, null]
             ];
+
+            // Setze den blauen Punkt in der Mitte wieder
+            boardLayout[3][3] = 1;
+
             selectedCell = null;
+            hasRemovedPeg = false; // Erlaube das Entfernen eines Steins beim Neustart
             createBoard();
         }
 
