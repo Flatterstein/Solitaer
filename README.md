@@ -4,7 +4,7 @@ Dies ist eine Webversion des klassischen Solitär-Spiels mit einem Kreuzfeld-Des
 
 ## 🚀 Live-Version
 Die aktuelle Version des Spiels kann unter folgendem Link gespielt werden:
-[https://flatterstein.github.io/solitaer/](https://flatterstein.github.io/solitaer/)
+[https://flatterstein.github.io/Solitaer/](https://flatterstein.github.io/Solitaer/)
 
 ## 🛠 Installation
 Falls du das Spiel lokal ausführen möchtest, gehe wie folgt vor:
