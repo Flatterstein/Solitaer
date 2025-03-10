@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solitaire Kreuzfeld</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .board-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(7, 60px);
+            gap: 5px;
+            padding: 10px;
+            border: 5px solid black;
+            background-color: lightgray;
+            border-radius: 10px;
+        }
+        .cell {
+            width: 60px;
+            height: 60px;
+            background-color: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            border: 2px solid black;
+        }
+        .peg {
+            width: 40px;
+            height: 40px;
+            background-color: blue;
+            border-radius: 50%;
+        }
+        .selected {
+            background-color: red !important;
+        }
+        .empty {
+            background-color: white;
+        }
+        .hidden {
+            background-color: transparent;
+            border: none;
+            pointer-events: none;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Solitaire - Kreuzfeld</h1>
+    <p>Klicke auf eine Nadel und dann auf das Zielfeld, um zu springen.</p>
+    
+    <div class="board-container">
+        <div id="board" class="board"></div>
+    </div>
+    <button onclick="resetBoard()">Neustart</button>
+
+    <script>
+        let boardLayout = [
+            [null, null,  1,  1,  1, null, null],
+            [null, null,  1,  1,  1, null, null],
+            [ 1,   1,   1,  1,  1,  1,  1],
+            [ 1,   1,   1,  0,  1,  1,  1],
+            [ 1,   1,   1,  1,  1,  1,  1],
+            [null, null,  1,  1,  1, null, null],
+            [null, null,  1,  1,  1, null, null]
+        ];
+
+        const board = document.getElementById('board');
+        let selectedCell = null;
+
+        function createBoard() {
+            board.innerHTML = '';
+            boardLayout.forEach((row, r) => {
+                row.forEach((cell, c) => {
+                    const cellElement = document.createElement('div');
+                    cellElement.classList.add('cell');
+                    if (cell === null) {
+                        cellElement.classList.add('hidden');
+                    } else if (cell === 1) {
+                        const peg = document.createElement('div');
+                        peg.classList.add('peg');
+                        if (selectedCell && selectedCell.row === r && selectedCell.col === c) {
+                            peg.classList.add('selected');
+                        }
+                        cellElement.appendChild(peg);
+                    } else {
+                        cellElement.classList.add('empty');
+                    }
+
+                    cellElement.dataset.row = r;
+                    cellElement.dataset.col = c;
+                    cellElement.addEventListener('click', handleCellClick);
+                    board.appendChild(cellElement);
+                });
+            });
+        }
+
+        function handleCellClick(event) {
+            const cellElement = event.currentTarget;
+            const row = parseInt(cellElement.dataset.row);
+            const col = parseInt(cellElement.dataset.col);
+
+            if (selectedCell) {
+                if (isValidMove(selectedCell, { row, col })) {
+                    makeMove(selectedCell, { row, col });
+                    selectedCell = null;
+                    createBoard();
+                } else {
+                    selectedCell = null;
+                    createBoard();
+                }
+            } else if (boardLayout[row][col] === 1) {
+                selectedCell = { row, col };
+                createBoard();
+            }
+        }
+
+        function isValidMove(from, to) {
+            const midRow = (from.row + to.row) / 2;
+            const midCol = (from.col + to.col) / 2;
+
+            if (boardLayout[to.row][to.col] !== 0) return false;
+            if (Math.abs(from.row - to.row) === 2 && from.col === to.col) {
+                return boardLayout[midRow][from.col] === 1;
+            }
+            if (Math.abs(from.col - to.col) === 2 && from.row === to.row) {
+                return boardLayout[from.row][midCol] === 1;
+            }
+            return false;
+        }
+
+        function makeMove(from, to) {
+            const midRow = (from.row + to.row) / 2;
+            const midCol = (from.col + to.col) / 2;
+
+            boardLayout[from.row][from.col] = 0;
+            boardLayout[to.row][to.col] = 1;
+            boardLayout[midRow][midCol] = 0;
+        }
+
+        function resetBoard() {
+            boardLayout = [
+                [null, null,  1,  1,  1, null, null],
+                [null, null,  1,  1,  1, null, null],
+                [ 1,   1,   1,  1,  1,  1,  1],
+                [ 1,   1,   1,  0,  1,  1,  1],
+                [ 1,   1,   1,  1,  1,  1,  1],
+                [null, null,  1,  1,  1, null, null],
+                [null, null,  1,  1,  1, null, null]
+            ];
+            selectedCell = null;
+            createBoard();
+        }
+
+        createBoard();
+    </script>
+
+</body>
+</html>
